@@ -24,7 +24,8 @@ describe('explorer', function() {
         .end(function(err, res) {
           if (err) throw err;
 
-          assert(!!~res.text.indexOf('<title>StrongLoop API Explorer</title>'), 'text does not contain expected string');
+          assert(!!~res.text.indexOf('<title>StrongLoop API Explorer</title>'), 
+            'text does not contain expected string');
           done();
         });
     });
@@ -37,7 +38,7 @@ describe('explorer', function() {
         .end(function(err, res) {
           if (err) return done(err);
           expect(res.body).to
-            .have.property('discoveryUrl', '/swagger/resources');
+            .have.property('url', '/swagger/resources');
           done();
         });
     });
@@ -54,7 +55,7 @@ describe('explorer', function() {
         .end(function(err, res) {
           if (err) return done(err);
           expect(res.body).to
-            .have.property('discoveryUrl', '/api/swagger/resources');
+            .have.property('url', '/api/swagger/resources');
           done();
         });
     });
@@ -72,7 +73,7 @@ describe('explorer', function() {
         .end(function(err, res) {
           if (err) return done(err);
           expect(res.body).to
-            .have.property('discoveryUrl', '/rest-api-root/swagger/resources');
+            .have.property('url', '/rest-api-root/swagger/resources');
           done();
         });
     });

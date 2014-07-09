@@ -1,10 +1,15 @@
+  'use strict';
 /*!
  * Adds dynamically-updated docs as /explorer
  */
 var path = require('path');
+var _defaults = require('lodash.defaults');
 var extend = require('util')._extend;
 var loopback = require('loopback');
 var express = requireLoopbackDependency('express');
+var swagger = require('./lib/swagger');
+var fs = require('fs');
+var SWAGGER_UI_ROOT = path.join(__dirname, 'node_modules', 'swagger-ui', 'dist');
 var STATIC_ROOT = path.join(__dirname, 'public');
 
 module.exports = explorer;
@@ -17,10 +22,14 @@ module.exports = explorer;
  */
 
 function explorer(loopbackApplication, options) {
-  options = extend({}, options);
-  options.basePath = options.basePath || loopbackApplication.get('restApiRoot');
+  options = _defaults({}, options, {
+    basePath: loopbackApplication.get('restApiRoot') || '',
+    name: 'swagger',
+    resourcePath: 'resources',
+    apiInfo: loopbackApplication.get('apiInfo') || {}
+  });
 
-  loopbackApplication.docs(options);
+  swagger(loopbackApplication.remotes(), options);
 
   var app = express();
 
@@ -28,10 +37,20 @@ function explorer(loopbackApplication, options) {
 
   app.get('/config.json', function(req, res) {
     res.send({
-      discoveryUrl: (options.basePath || '') + '/swagger/resources'
+      url: path.join(options.basePath || '/', options.name, options.resourcePath)
     });
   });
+  // Allow specifying a static file root for swagger files. Any files in that folder
+  // will override those in the swagger-ui distribution. In this way one could e.g. 
+  // make changes to index.html without having to worry about constantly pulling in
+  // JS updates.
+  if (options.swaggerDistRoot) {
+    app.use(loopback.static(options.swaggerDistRoot));
+  }
+  // File in node_modules are overridden by a few customizations
   app.use(loopback.static(STATIC_ROOT));
+  // Swagger UI distribution
+  app.use(loopback.static(SWAGGER_UI_ROOT));
   return app;
 }
 
